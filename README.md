@@ -41,5 +41,5 @@ print(foo_value)
 See examples with more complexity on example.py file
 
 <div align="center">
-Made with ❤️ by [Sairoko](https://cbenavides.mx)
+Made with <3 by [Sairoko](https://cbenavides.mx)
 </div>
