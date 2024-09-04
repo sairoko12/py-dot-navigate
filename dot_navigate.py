@@ -1,44 +1,25 @@
-# -*- coding: utf-8 -*-
+from dataclasses import dataclass, field
 
 
-class DotNavigate:
-    def __init__(self, dictionary):
-        self.dictionary = dictionary
+@dataclass
+class DotNavigate(object):
+    dictionary: dict
+    cache: dict = field(default_factory=dict, init=False)
 
-    def get(self, dot_path, default=None, dictionary=None):
-        parts_of_path = dot_path.split('.')
-        dictionary = self.dictionary if dictionary is None else dictionary
+    def get(self, dot_path, default=None):
+        if dot_path in self.cache:
+            return self.cache[dot_path]
 
-        for index, key in enumerate(parts_of_path):
-            if key.isnumeric() and DotNavigate.is_list(dictionary):
-                try:
-                    if DotNavigate.is_dict(dictionary[int(key)]) \
-                            and len(parts_of_path) >= 2:
-                        path = ".".join([parts_of_path[part] for part in range(
-                            1, len(parts_of_path))])
-                        return self.get(path, default, dictionary[int(key)])
-                    else:
-                        return dictionary[int(key)]
-                except IndexError:
-                    return default
-            elif DotNavigate.is_dict(dictionary) and key in dictionary.keys():
-                if DotNavigate.is_dict(dictionary[key]) \
-                        or DotNavigate.is_list(dictionary[key]):
-                    del parts_of_path[index]
-                    if len(parts_of_path) == 0:
-                        return dictionary[key]
-                    else:
-                        return self.get(".".join(parts_of_path),
-                                        default, dictionary[key])
-                else:
-                    return dictionary[key]
-            else:
-                return default
+        current_value = self.dictionary
+        keys = iter(dot_path.split('.'))
 
-    @staticmethod
-    def is_list(value):
-        return isinstance(value, (list))
+        try:
+            for key in keys:
+                key = int(key) if key.isdigit() else key
+                current_value = current_value[key]
 
-    @staticmethod
-    def is_dict(value):
-        return isinstance(value, (dict))
+            self.cache[dot_path] = current_value
+        except (KeyError, IndexError, TypeError):
+            return default
+
+        return current_value
